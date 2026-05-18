@@ -4,6 +4,7 @@ from flask_cors import CORS
 from engine.orchestrator import Orchestrator
 
 app = Flask(__name__)
+
 CORS(app)
 
 orchestrator = Orchestrator()
@@ -21,5 +22,19 @@ def generate():
     return jsonify(result)
 
 
+@app.route("/")
+def home():
+
+    return {
+        "status": "online",
+        "engine": "Kainow Agent OS"
+    }
+
+
 if __name__ == "__main__":
-    app.run(port=5000, debug=True)
+
+    app.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=True
+    )
