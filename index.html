@@ -1,14 +1,22 @@
-cat << 'EOF' > atualizar_tudo.py
 import os
+import json
+from http.server import BaseHTTPRequestHandler, HTTPServer
 from github import Github
+from openai import OpenAI
 
+# Coleta o token automático e seguro do ambiente
 token = os.getenv("GITHUB_TOKEN") or os.getenv("CODESPACE_VSCODE_FOLDER")
-g = Github(token)
 
-# Atualiza o repositório kainow-one (que é o que está conectado ao seu domínio)
+client = OpenAI(
+    base_url="https://azure.com",
+    api_key=token
+)
+
+g = Github(token)
 repo = g.get_repo("gelcijosegrouptrig-cmyk/kainow-one")
 
-html_chat = """<!DOCTYPE html>
+# HTML PREMIUM incorporado diretamente no servidor Python (Sem depender de arquivos externos)
+HTML_INTERFACE = """<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -19,18 +27,18 @@ html_chat = """<!DOCTYPE html>
 <body class="bg-slate-900 text-white font-sans h-screen flex flex-col m-0 p-0">
     <header class="bg-slate-800 p-4 shadow-md flex justify-between items-center border-b border-slate-700">
         <h1 class="text-xl font-bold flex items-center gap-2">🤖 Kainow Full-Stack IA</h1>
-        <span class="bg-emerald-500/20 text-emerald-400 text-xs px-3 py-1 rounded-full font-medium border border-emerald-500/30 animate-pulse">Online</span>
+        <span class="bg-emerald-500/20 text-emerald-400 text-xs px-3 py-1 rounded-full font-medium border border-emerald-500/30 animate-pulse">Online (Python Engine)</span>
     </header>
     
     <main class="flex-1 overflow-y-auto p-6 space-y-4 max-w-4xl mx-auto w-full flex flex-col justify-start" id="chat-container">
         <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-slate-200 max-w-[85%] self-start shadow-lg mt-4">
-            Olá! Eu sou o seu Agente Full-Stack automático. Digite abaixo o sistema, integração ou página que você deseja que eu programe agora!
+            Olá! Eu sou o seu Agente Full-Stack rodando direto em Python. Digite abaixo o sistema, tela ou integração que você deseja criar!
         </div>
     </main>
     
     <footer class="p-4 bg-slate-800/80 border-t border-slate-700 sticky bottom-0">
         <div class="max-w-4xl mx-auto flex gap-3">
-            <input type="text" id="prompt-input" placeholder="Ex: Crie um formulário de contato moderno..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 text-white shadow-inner">
+            <input type="text" id="prompt-input" placeholder="Ex: Crie uma tela de login moderna..." class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 focus:outline-none focus:border-blue-500 text-white shadow-inner">
             <button onclick="enviarPrompt()" id="btn-enviar" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer">Enviar</button>
         </div>
     </footer>
@@ -51,11 +59,11 @@ html_chat = """<!DOCTYPE html>
             container.scrollTop = container.scrollHeight;
 
             const pensandoId = 'ia-' + Date.now();
-            container.innerHTML += `<div id="\${pensandoId}" class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-slate-400 max-w-[85%] self-start italic shadow-md">🤖 IA pensando e criando código...</div>`;
+            container.innerHTML += `<div id="${pensandoId}" class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-slate-400 max-w-[85%] self-start italic shadow-md">🤖 Processando engenharia e escrevendo código...</div>`;
             container.scrollTop = container.scrollHeight;
 
             try {
-                const response = await fetch('http://localhost:5000', {
+                const response = await fetch('/api/criar', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({ prompt: prompt })
@@ -65,12 +73,12 @@ html_chat = """<!DOCTYPE html>
                 document.getElementById(pensandoId).remove();
                 container.innerHTML += `<div class="bg-emerald-950 border border-emerald-500/30 p-4 rounded-xl text-emerald-400 max-w-[85%] self-start shadow-md">
                     <p class="font-bold text-emerald-300">✅ Criado com sucesso!</p>
-                    <p class="text-xs text-slate-400 mt-1">O arquivo foi gravado no repositório.</p>
-                    <a href="http://sixtechbrasil.com.br\${data.arquivo}" target="_blank" class="inline-block mt-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-md">Visualizar Página Criada 🌐</a>
+                    <p class="text-xs text-slate-400 mt-1 font-mono">Arquivo: ${data.arquivo}</p>
+                    <a href="http://sixtechbrasil.com.br{data.arquivo}" target="_blank" class="inline-block mt-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-md">Visualizar Página Criada 🌐</a>
                 </div>`;
             } catch (err) {
                 if(document.getElementById(pensandoId)) document.getElementById(pensandoId).remove();
-                container.innerHTML += `<div class="bg-rose-950 border border-rose-500/30 p-4 rounded-xl text-rose-400 max-w-[85%] self-start shadow-md">❌ Erro de conexão com o terminal do Codespaces. Verifique se o servidor está rodando!</div>`;
+                container.innerHTML += `<div class="bg-rose-950 border border-rose-500/30 p-4 rounded-xl text-rose-400 max-w-[85%] self-start shadow-md">❌ Erro ao falar com o motor Python.</div>`;
             }
             input.disabled = false;
             btn.disabled = false;
@@ -80,11 +88,52 @@ html_chat = """<!DOCTYPE html>
 </body>
 </html>"""
 
-try:
-    contents = repo.get_contents("index.html", ref="main")
-    repo.update_file(path="index.html", message="🌐 Bot IA: Forçando Design Premium", content=html_chat, sha=contents.sha, branch="main")
-    print("✅ SUCESSO! O arquivo index.html do repositório kainow-one foi atualizado.")
-except Exception as e:
-    print(f"❌ Erro: {e}")
-EOF
-python atualizar_tudo.py
+class ServidorCompleto(BaseHTTPRequestHandler):
+    def do_GET(self):
+        # Serve a interface HTML escura instantaneamente sem cache
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate')
+        self.end_headers()
+        self.wfile.write(HTML_INTERFACE.encode('utf-8'))
+
+    def do_POST(self):
+        if self.path == '/api/criar':
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length)
+            dados = json.loads(post_data.decode('utf-8'))
+            prompt = dados.get('prompt')
+
+            print(f"🤖 [PYTHON ENGINE] Processando instrução de código: {prompt}")
+
+            # OpenAI chama o modelo GPT-4o
+            response = client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": "Você é um programador Full-Stack sênior experiente. Escreva estritamente APENAS o código puro, limpo e funcional solicitado (HTML/CSS/JS). Nunca inclua introduções, explicações textuais ou blocos de marcação markdown."},
+                    {"role": "user", "content": prompt}
+                ],
+                model="gpt-4o",
+                temperature=0.2
+            )
+            codigo_gerado = response.choices.message.content.strip()
+            codigo_gerado = codigo_gerado.replace("```html", "").replace("```", "").strip()
+
+            nome_arquivo = f"sistema-{int(os.urandom(2).hex(), 16)}.html"
+            
+            # Envia direto para o repositório
+            repo.create_file(
+                path=nome_arquivo,
+                message=f"🤖 Bot IA: Modulo gerado via Python Engine",
+                content=codigo_gerado,
+                branch="main"
+            )
+
+            self.send_response(200)
+            self.send_header('Content-Type', 'application/json')
+            self.end_headers()
+            resposta = {"status": "sucesso", "arquivo": nome_arquivo}
+            self.wfile.write(json.dumps(resposta).encode('utf-8'))
+
+print("🔥 [PYTHON SUPER ENGINE] Servidor 100% ativo rodando na porta 5000!")
+server = HTTPServer(('0.0.0.0', 5000), ServidorCompleto)
+server.serve_forever()
