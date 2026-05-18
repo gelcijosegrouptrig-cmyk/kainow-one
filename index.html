@@ -1,10 +1,19 @@
-<!DOCTYPE html>
+cat << 'EOF' > atualizar_tudo.py
+import os
+from github import Github
+
+token = os.getenv("GITHUB_TOKEN") or os.getenv("CODESPACE_VSCODE_FOLDER")
+g = Github(token)
+
+# Atualiza o repositório kainow-one (que é o que está conectado ao seu domínio)
+repo = g.get_repo("gelcijosegrouptrig-cmyk/kainow-one")
+
+html_chat = """<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kainow IA Bot</title>
-    <!-- Link do Tailwind CSS corrigido para carregar o visual escuro -->
     <script src="https://tailwindcss.com"></script>
 </head>
 <body class="bg-slate-900 text-white font-sans h-screen flex flex-col m-0 p-0">
@@ -42,7 +51,7 @@
             container.scrollTop = container.scrollHeight;
 
             const pensandoId = 'ia-' + Date.now();
-            container.innerHTML += `<div id="${pensandoId}" class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-slate-400 max-w-[85%] self-start italic shadow-md">🤖 IA pensando e criando código...</div>`;
+            container.innerHTML += `<div id="\${pensandoId}" class="bg-slate-800 border border-slate-700 p-4 rounded-xl text-slate-400 max-w-[85%] self-start italic shadow-md">🤖 IA pensando e criando código...</div>`;
             container.scrollTop = container.scrollHeight;
 
             try {
@@ -57,7 +66,7 @@
                 container.innerHTML += `<div class="bg-emerald-950 border border-emerald-500/30 p-4 rounded-xl text-emerald-400 max-w-[85%] self-start shadow-md">
                     <p class="font-bold text-emerald-300">✅ Criado com sucesso!</p>
                     <p class="text-xs text-slate-400 mt-1">O arquivo foi gravado no repositório.</p>
-                    <a href="http://sixtechbrasil.com.br{data.arquivo}" target="_blank" class="inline-block mt-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-md">Visualizar Página Criada 🌐</a>
+                    <a href="http://sixtechbrasil.com.br\${data.arquivo}" target="_blank" class="inline-block mt-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-bold px-4 py-2 rounded-lg transition-all shadow-md">Visualizar Página Criada 🌐</a>
                 </div>`;
             } catch (err) {
                 if(document.getElementById(pensandoId)) document.getElementById(pensandoId).remove();
@@ -69,4 +78,13 @@
         }
     </script>
 </body>
-</html>
+</html>"""
+
+try:
+    contents = repo.get_contents("index.html", ref="main")
+    repo.update_file(path="index.html", message="🌐 Bot IA: Forçando Design Premium", content=html_chat, sha=contents.sha, branch="main")
+    print("✅ SUCESSO! O arquivo index.html do repositório kainow-one foi atualizado.")
+except Exception as e:
+    print(f"❌ Erro: {e}")
+EOF
+python atualizar_tudo.py
