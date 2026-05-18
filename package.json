@@ -1,0 +1,29 @@
+{
+  "name": "kainow-one-ia",
+  "version": "1.0.0",
+  "description": "KAINOW ONE IA - AI-powered code generation and development system",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "build": "tsc && wrangler build",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 migrations apply kainow_one_db",
+    "test": "jest",
+    "lint": "eslint src/**/*.ts"
+  },
+  "dependencies": {
+    "hono": "^4.0.0",
+    "@hono/node-server": "^1.0.0",
+    "@hono/cors": "^4.0.0",
+    "wrangler": "^3.0.0",
+    "@cloudflare/workers-types": "^4.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0"
+  }
+}
